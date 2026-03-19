@@ -1,3 +1,4 @@
+import json
 import random
 import ollama
 from src.retrieval import retrieve_relevant_chunks, build_context
@@ -23,18 +24,24 @@ Answer:"""
 def build_quiz_prompt(context):
     return f"""You are a study coach creating a short quiz based on course material.
 
-Using ONLY the content below, generate 3 questions to test a student's understanding.
-For each question provide:
-- The question
-- 4 multiple choice options (A, B, C, D)
-- The correct answer with a brief explanation
+Using ONLY the content below, generate exactly 3 multiple-choice questions.
+
+Return ONLY a valid JSON array — no explanation, no markdown, just the JSON.
+
+Format:
+[
+  {{
+    "question": "...",
+    "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
+    "correct": "A",
+    "explanation": "..."
+  }}
+]
 
 Use the same language as the source material.
 
 Course material:
-{context}
-
-Quiz:"""
+{context}"""
 
 
 def build_summary_prompt(context):
@@ -76,8 +83,20 @@ def generate_quiz(topic, all_chunks, chunk_embeddings, embedding_model, top_k=5)
     results = retrieve_relevant_chunks(topic, all_chunks, chunk_embeddings, embedding_model, top_k=top_k)
     context = build_context(results)
     prompt = build_quiz_prompt(context)
-    quiz = generate_answer(prompt)
-    return quiz
+    raw = generate_answer(prompt)
+
+    # Strip markdown code fences if present
+    text = raw.strip()
+    if text.startswith("```"):
+        text = text.split("```")[1]
+        if text.startswith("json"):
+            text = text[4:]
+        text = text.strip()
+
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        return None
 
 
 def generate_summary(all_chunks, model_name="llama3.2", sample_size=10):

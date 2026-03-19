@@ -18,6 +18,9 @@ models/
 *.bin
 *.safetensors
 
+# Progress tracking
+progress.json
+
 # IDE
 .vscode/
 .idea/

@@ -7,7 +7,8 @@ Built with a local RAG (Retrieval-Augmented Generation) pipeline using `sentence
 ## Features
 
 - **Q&A** — ask questions in Dutch or English, answers are grounded in your PDFs
-- **Quiz generation** — `/quiz <topic>` generates 3 multiple-choice questions on any topic
+- **Quiz generation** — `/quiz <topic>` generates 3 multiple-choice questions on any topic, shown one at a time so you answer before seeing the solution
+- **Progress tracking** — `/progress` shows your quiz history and flags weak topics to revisit
 - **Summary** — `/summary` gives a structured overview of the loaded material
 - **Any PDF** — point it at a single file or a whole folder
 
@@ -44,6 +45,7 @@ python main.py --pdf path/to/folder/
 |---------|-------------|
 | `<question>` | ask anything about your material |
 | `/quiz <topic>` | generate a 3-question quiz on a topic |
+| `/progress` | show quiz history and weak topics |
 | `/summary` | summarize the loaded material |
 | `/help` | show available commands |
 | `exit` | quit |
@@ -59,7 +61,8 @@ project/
 │   ├── embeddings.py            # load model, encode chunks
 │   ├── retrieval.py             # cosine similarity search
 │   ├── generation.py            # prompts + LLM calls
-│   └── evaluate.py              # hit rate evaluation
+│   ├── evaluate.py              # hit rate evaluation
+│   └── progress.py              # quiz score tracking + weak topic detection
 ├── data/raw/                    # your PDFs (gitignored)
 └── notebooks/
     └── 01_project_setup.ipynb   # exploration notebook

@@ -40,7 +40,10 @@ Choosing the right generation model required several iterations. The project sta
 3. **Retrieval:** The student's input is encoded with the same model and the top-k most similar chunks are selected by cosine similarity (`src/retrieval.py`).
 4. **Generation:** Retrieved chunks are inserted into a prompt and passed to llama3.2 via ollama. The prompt enforces strict grounding in the context and language matching (`src/generation.py`).
 
-Beyond Q&A, the system offers `/quiz <topic>` (generates 3 multiple-choice questions from retrieved chunks on that topic) and `/summary` (summarizes a random sample of loaded chunks).
+Beyond Q&A, the system offers three additional features:
+- `/quiz <topic>` — generates 3 multiple-choice questions from retrieved chunks on that topic. Questions are shown one at a time and the student answers before seeing the correct answer. Scores are tracked automatically and saved to `progress.json`.
+- `/summary` — summarizes a random sample of loaded chunks.
+- `/progress` — displays quiz history per topic with scores and identifies weak areas (topics scored below 60%). It suggests which topics to revisit, implementing the adaptive learning aspect of the study coach concept.
 
 ---
 
@@ -85,6 +88,7 @@ _Pattern 3 — Right content, wrong chunk boundary._ The question about `PERFORM
 - Sentence-boundary chunking with configurable size and overlap, chosen over fixed-character splitting to avoid cutting sentences mid-thought
 - The evaluation framework: defining the test set of 10 Dutch questions, choosing hit rate and cosine score as metrics, and writing the comparison script that runs all 6 configurations automatically
 - The quiz and summary features, including prompt engineering to make the model generate structured multiple-choice questions grounded in the retrieved context
+- The adaptive progress tracking system (`src/progress.py`): questions are shown one at a time so the student must answer before seeing the solution, scores are tracked automatically and persisted to `progress.json`, and `/progress` surfaces weak topics with a suggested study plan
 - The `--pdf` CLI argument allowing any file or folder to be used as input
 
 **Research and experimentation:**
@@ -122,4 +126,3 @@ _Pattern 3 — Right content, wrong chunk boundary._ The question about `PERFORM
 - **Slide-aware chunking:** Chunk per slide using page breaks and prepend the slide title to each chunk for richer context.
 - **Persistent embeddings:** Save embeddings to disk so re-indexing is not required on every run.
 - **Web interface:** Replace the CLI with a Streamlit UI where students can upload PDFs through a browser without using the command line.
-- **Adaptive learning:** Track which questions a student answers incorrectly and prioritize quizzes on those topics in future sessions.

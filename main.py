@@ -18,6 +18,7 @@ from pathlib import Path
 from src.ingest import load_all_pdfs_from_folder, extract_text_from_pdf, chunk_text
 from src.embeddings import load_embedding_model, encode_chunks
 from src.generation import answer_question, generate_quiz, generate_summary
+from src.progress import load_progress, record_quiz_result, format_progress
 
 
 def build_chunks(documents, chunk_size=500, overlap=100):
@@ -50,6 +51,7 @@ def print_help():
     print("  <question>       ask a question about your material")
     print("  /quiz <topic>    generate a quiz on a topic")
     print("  /summary         summarize the loaded material")
+    print("  /progress        show quiz history and weak topics")
     print("  /help            show this message")
     print("  exit             quit\n")
 
@@ -100,15 +102,52 @@ def main():
             print()
             continue
 
+        if query == "/progress":
+            print()
+            print(format_progress(load_progress()))
+            print()
+            continue
+
         if query.startswith("/quiz"):
             topic = query[5:].strip()
             if not topic:
                 print("Usage: /quiz <topic>  (e.g. /quiz stored functions)\n")
                 continue
             print(f"\nGenerating quiz on '{topic}'...\n")
-            quiz = generate_quiz(topic, all_chunks, chunk_embeddings, model)
-            print(quiz)
-            print()
+            questions = generate_quiz(topic, all_chunks, chunk_embeddings, model)
+
+            if questions is None:
+                print("Could not parse quiz. Try again.\n")
+                continue
+
+            correct_count = 0
+            for i, q in enumerate(questions, 1):
+                print(f"Question {i}/{len(questions)}: {q['question']}")
+                for letter, option in q["options"].items():
+                    print(f"  {letter}) {option}")
+
+                while True:
+                    try:
+                        answer = input("Your answer (A/B/C/D): ").strip().upper()
+                    except (KeyboardInterrupt, EOFError):
+                        break
+                    if answer in ("A", "B", "C", "D"):
+                        break
+                    print("  Please enter A, B, C, or D.")
+
+                if answer == q["correct"]:
+                    print(f"  Correct! {q['explanation']}\n")
+                    correct_count += 1
+                else:
+                    print(f"  Wrong. The correct answer was {q['correct']}. {q['explanation']}\n")
+
+            record_quiz_result(topic, correct_count, len(questions))
+            if correct_count < 2:
+                print(f"Result: {correct_count}/{len(questions)} — keep practicing! Try /quiz {topic} again.\n")
+            elif correct_count < len(questions):
+                print(f"Result: {correct_count}/{len(questions)} — good, but room for improvement.\n")
+            else:
+                print(f"Result: {correct_count}/{len(questions)} — excellent!\n")
             continue
 
         response = answer_question(query, all_chunks, chunk_embeddings, model)
