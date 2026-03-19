@@ -2,7 +2,7 @@
 
 **Course:** Advanced AI
 **Student:** Dylan Bekers
-**Repository:** [TODO: GitHub link]
+**Repository:** https://github.com/Dylan-Bekers/ai-study-coach
 
 ---
 
@@ -67,11 +67,11 @@ Beyond Q&A, the system offers `/quiz <topic>` (generates 3 multiple-choice quest
 
 To understand why certain questions failed, the `--verbose` flag was used to inspect the actual chunks retrieved for each missed question. Three patterns emerged:
 
-*Pattern 1 — Keyword only in code, no prose context.* The question "Welke beveiligingsmodus voert een functie uit met de rechten van de eigenaar?" (SECURITY DEFINER) failed across all six configurations with cosine scores between 0.27 and 0.37 — far below any hit. Inspection showed that `SECURITY DEFINER` appears in the PDFs only as a keyword inside a code block, with no surrounding sentence that explains what it does. The embedding model encodes the *meaning* of the question ("security mode, owner's rights, caller") but the matching code block carries almost none of that meaning in its vector. This is a fundamental mismatch between how dense retrieval works and how technical documentation is written.
+_Pattern 1 — Keyword only in code, no prose context._ The question "Welke beveiligingsmodus voert een functie uit met de rechten van de eigenaar?" (SECURITY DEFINER) failed across all six configurations with cosine scores between 0.27 and 0.37 — far below any hit. Inspection showed that `SECURITY DEFINER` appears in the PDFs only as a keyword inside a code block, with no surrounding sentence that explains what it does. The embedding model encodes the _meaning_ of the question ("security mode, owner's rights, caller") but the matching code block carries almost none of that meaning in its vector. This is a fundamental mismatch between how dense retrieval works and how technical documentation is written.
 
-*Pattern 2 — High-frequency title slide as noise.* Multiple missed questions had the same chunk ranked first: `"Procedurele SQL met plpgsql Wim.bertels@ucll.be — Objecten op de server: Stored procedures, Stored functions, Triggers..."`. This is a title/overview slide that contains many topic keywords but no actual information. Because it mentions nearly every concept in the course, its embedding lands close to almost any query. It acted as a systematic false positive across all configurations and chunk sizes.
+_Pattern 2 — High-frequency title slide as noise._ Multiple missed questions had the same chunk ranked first: `"Procedurele SQL met plpgsql Wim.bertels@ucll.be — Objecten op de server: Stored procedures, Stored functions, Triggers..."`. This is a title/overview slide that contains many topic keywords but no actual information. Because it mentions nearly every concept in the course, its embedding lands close to almost any query. It acted as a systematic false positive across all configurations and chunk sizes.
 
-*Pattern 3 — Right content, wrong chunk boundary.* The question about `PERFORM` ("alternatief voor SELECT") retrieved an EXPLAIN-related chunk as the top result (score 0.61) — from a completely different PDF. The chunk that actually contains the answer (`"PERFORM alternatief voor SELECT waarbij het resultaat niet wordt opgevangen"`) existed in the index but ranked lower. With `chunk_size=300` the relevant sentence was isolated in its own chunk, making it retrievable for some configs but not others depending on the model. This shows that chunking boundaries directly affect whether a key sentence is retrievable at all.
+_Pattern 3 — Right content, wrong chunk boundary._ The question about `PERFORM` ("alternatief voor SELECT") retrieved an EXPLAIN-related chunk as the top result (score 0.61) — from a completely different PDF. The chunk that actually contains the answer (`"PERFORM alternatief voor SELECT waarbij het resultaat niet wordt opgevangen"`) existed in the index but ranked lower. With `chunk_size=300` the relevant sentence was isolated in its own chunk, making it retrievable for some configs but not others depending on the model. This shows that chunking boundaries directly affect whether a key sentence is retrievable at all.
 
 **Quiz generation:** The `/quiz` feature demonstrated that retrieval quality directly affects generation quality. When asked for a quiz on `EXPLAIN`, one of the five retrieved chunks was a PL/pgSQL chunk that was only marginally relevant, causing the model to generate an off-topic question about functions vs. procedures. This confirms that improving retrieval would benefit all three features of the study coach, not just Q&A.
 
