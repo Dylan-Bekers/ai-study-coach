@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data (PDFs can be large)
+data/raw/
+
+# Models cache
+.cache/
+models/
+*.bin
+*.safetensors
+
+# IDE
+.vscode/
+.idea/
