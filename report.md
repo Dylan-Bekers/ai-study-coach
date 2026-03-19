@@ -41,6 +41,7 @@ Choosing the right generation model required several iterations. The project sta
 4. **Generation:** Retrieved chunks are inserted into a prompt and passed to llama3.2 via ollama. The prompt enforces strict grounding in the context and language matching (`src/generation.py`).
 
 Beyond Q&A, the system offers three additional features:
+
 - `/quiz <topic>` — generates 3 multiple-choice questions from retrieved chunks on that topic. Questions are shown one at a time and the student answers before seeing the correct answer. Scores are tracked automatically and saved to `progress.json`.
 - `/summary` — summarizes a random sample of loaded chunks.
 - `/progress` — displays quiz history per topic with scores and identifies weak areas (topics scored below 60%). It suggests which topics to revisit, implementing the adaptive learning aspect of the study coach concept.
@@ -124,5 +125,5 @@ _Pattern 3 — Right content, wrong chunk boundary._ The question about `PERFORM
 
 - **Hybrid search:** Combine dense retrieval with BM25 keyword matching to handle exact technical terms that semantic models miss.
 - **Slide-aware chunking:** Chunk per slide using page breaks and prepend the slide title to each chunk for richer context.
-- **Persistent embeddings:** Save embeddings to disk so re-indexing is not required on every run.
+- **Persistent embeddings (optional):** Save embeddings to disk so re-indexing is not required on every run.
 - **Web interface:** Replace the CLI with a Streamlit UI where students can upload PDFs through a browser without using the command line.
